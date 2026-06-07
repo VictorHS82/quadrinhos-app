@@ -24,7 +24,10 @@ export default function AddEditScreen() {
 
   useEffect(() => {
     if (id) {
-      loadQuadrinho(parseInt(id));
+      const parsedId = parseInt(id, 10);
+      if (!isNaN(parsedId) && parsedId > 0) {
+        loadQuadrinho(parsedId);
+      }
     }
   }, [id]);
 
@@ -47,12 +50,17 @@ export default function AddEditScreen() {
   };
 
   const handleSave = async () => {
-    if (!titulo.trim() || !autor.trim() || !editora.trim() || !anoPublicacao.trim()) {
+    const trimmedTitulo = titulo.trim();
+    const trimmedAutor = autor.trim();
+    const trimmedEditora = editora.trim();
+    const trimmedDescricao = descricao.trim();
+
+    if (!trimmedTitulo || !trimmedAutor || !trimmedEditora || !anoPublicacao.trim()) {
       Alert.alert('Erro', 'Preencha todos os campos obrigatórios');
       return;
     }
 
-    const ano = parseInt(anoPublicacao);
+    const ano = parseInt(anoPublicacao, 10);
     if (isNaN(ano) || ano < 0 || ano > new Date().getFullYear()) {
       Alert.alert('Erro', 'Ano de publicação inválido');
       return;
@@ -61,23 +69,28 @@ export default function AddEditScreen() {
     try {
       setLoading(true);
       if (id) {
+        const parsedId = parseInt(id, 10);
+        if (isNaN(parsedId) || parsedId <= 0) {
+          Alert.alert('Erro', 'ID do quadrinho inválido');
+          return;
+        }
         // Atualizar
-        await quadrinhoService.updateQuadrinho(parseInt(id), {
-          titulo,
-          autor,
-          editora,
+        await quadrinhoService.updateQuadrinho(parsedId, {
+          titulo: trimmedTitulo,
+          autor: trimmedAutor,
+          editora: trimmedEditora,
           anoPublicacao: ano,
-          descricao,
+          descricao: trimmedDescricao,
         });
         Alert.alert('Sucesso', 'Quadrinho atualizado com sucesso');
       } else {
         // Criar novo
         await quadrinhoService.createQuadrinho({
-          titulo,
-          autor,
-          editora,
+          titulo: trimmedTitulo,
+          autor: trimmedAutor,
+          editora: trimmedEditora,
           anoPublicacao: ano,
-          descricao,
+          descricao: trimmedDescricao,
         });
         Alert.alert('Sucesso', 'Quadrinho adicionado com sucesso');
       }
@@ -104,6 +117,7 @@ export default function AddEditScreen() {
             value={titulo}
             onChangeText={setTitulo}
             editable={!loading}
+            maxLength={200}
           />
         </View>
 
@@ -115,6 +129,7 @@ export default function AddEditScreen() {
             value={autor}
             onChangeText={setAutor}
             editable={!loading}
+            maxLength={150}
           />
         </View>
 
@@ -126,6 +141,7 @@ export default function AddEditScreen() {
             value={editora}
             onChangeText={setEditora}
             editable={!loading}
+            maxLength={150}
           />
         </View>
 
@@ -138,6 +154,7 @@ export default function AddEditScreen() {
             onChangeText={setAnoPublicacao}
             keyboardType="number-pad"
             editable={!loading}
+            maxLength={4}
           />
         </View>
 
@@ -151,6 +168,7 @@ export default function AddEditScreen() {
             multiline
             numberOfLines={4}
             editable={!loading}
+            maxLength={1000}
           />
         </View>
 

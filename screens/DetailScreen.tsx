@@ -19,7 +19,13 @@ export default function DetailScreen() {
 
   useEffect(() => {
     if (id) {
-      loadQuadrinho(parseInt(id));
+      const parsedId = parseInt(id, 10);
+      if (!isNaN(parsedId) && parsedId > 0) {
+        loadQuadrinho(parsedId);
+      } else {
+        Alert.alert('Erro', 'ID do quadrinho inválido');
+        router.back();
+      }
     }
   }, [id]);
 
