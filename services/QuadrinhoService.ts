@@ -6,14 +6,23 @@ class QuadrinhoService {
   private db: SQLite.SQLiteDatabase | null = null;
 
   async initializeDb(): Promise<void> {
-    this.db = await getDatabase();
+    try {
+      this.db = await getDatabase();
+    } catch (error) {
+      this.db = null;
+      console.error('QuadrinhoService: falha ao inicializar banco de dados:', error);
+      throw error;
+    }
   }
 
   private async getDb(): Promise<SQLite.SQLiteDatabase> {
     if (!this.db) {
       await this.initializeDb();
     }
-    return this.db!;
+    if (!this.db) {
+      throw new Error('Banco de dados não está disponível após inicialização');
+    }
+    return this.db;
   }
 
   // CREATE

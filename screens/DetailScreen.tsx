@@ -10,6 +10,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Quadrinho } from '../types/Quadrinho';
 import { quadrinhoService } from '../services/QuadrinhoService';
+import { getErrorMessage } from '../services/error-utils';
 
 export default function DetailScreen() {
   const router = useRouter();
@@ -33,7 +34,9 @@ export default function DetailScreen() {
         router.back();
       }
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível carregar o quadrinho');
+      const message = getErrorMessage(error);
+      console.error('Erro ao carregar quadrinho:', error);
+      Alert.alert('Erro', `Não foi possível carregar o quadrinho: ${message}`);
       router.back();
     } finally {
       setLoading(false);
@@ -56,7 +59,9 @@ export default function DetailScreen() {
               Alert.alert('Sucesso', 'Quadrinho deletado com sucesso');
               router.push('/');
             } catch (error) {
-              Alert.alert('Erro', 'Não foi possível deletar o quadrinho');
+              const message = getErrorMessage(error);
+              console.error('Erro ao deletar quadrinho:', error);
+              Alert.alert('Erro', `Não foi possível deletar o quadrinho: ${message}`);
             }
           },
           style: 'destructive',

@@ -11,6 +11,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Quadrinho, CreateQuadrinhoInput } from '../types/Quadrinho';
 import { quadrinhoService } from '../services/QuadrinhoService';
+import { getErrorMessage } from '../services/error-utils';
 
 export default function AddEditScreen() {
   const router = useRouter();
@@ -40,7 +41,9 @@ export default function AddEditScreen() {
         setDescricao(quad.descricao || '');
       }
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível carregar o quadrinho');
+      const message = getErrorMessage(error);
+      console.error('Erro ao carregar quadrinho:', error);
+      Alert.alert('Erro', `Não foi possível carregar o quadrinho: ${message}`);
     } finally {
       setLoading(false);
     }
@@ -83,7 +86,9 @@ export default function AddEditScreen() {
       }
       router.push('/');
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar o quadrinho');
+      const message = getErrorMessage(error);
+      console.error('Erro ao salvar quadrinho:', error);
+      Alert.alert('Erro', `Não foi possível salvar o quadrinho: ${message}`);
     } finally {
       setLoading(false);
     }

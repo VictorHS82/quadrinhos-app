@@ -12,6 +12,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Quadrinho } from '../types/Quadrinho';
 import { quadrinhoService } from '../services/QuadrinhoService';
+import { getErrorMessage } from '../services/error-utils';
 
 export default function HomeScreen() {
   const [quadrinhos, setQuadrinhos] = useState<Quadrinho[]>([]);
@@ -31,8 +32,9 @@ export default function HomeScreen() {
         setQuadrinhos(data);
       }
     } catch (error) {
+      const message = getErrorMessage(error);
       console.error('Erro ao carregar quadrinhos:', error);
-      Alert.alert('Erro', 'Não foi possível carregar os quadrinhos');
+      Alert.alert('Erro', `Não foi possível carregar os quadrinhos: ${message}`);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -64,7 +66,9 @@ export default function HomeScreen() {
               Alert.alert('Sucesso', 'Quadrinho deletado com sucesso');
               loadQuadrinhos();
             } catch (error) {
-              Alert.alert('Erro', 'Não foi possível deletar o quadrinho');
+              const message = getErrorMessage(error);
+              console.error('Erro ao deletar quadrinho:', error);
+              Alert.alert('Erro', `Não foi possível deletar o quadrinho: ${message}`);
             }
           },
           style: 'destructive',
