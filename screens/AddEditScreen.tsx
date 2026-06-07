@@ -6,16 +6,19 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Quadrinho, CreateQuadrinhoInput } from '../types/Quadrinho';
 import { quadrinhoService } from '../services/QuadrinhoService';
+import { AppColors } from '../constants/colors';
+import { sharedStyles } from '../styles/shared';
+import { showError, showSuccess } from '../utils/alerts';
+import { useQuadrinho } from '../hooks/use-quadrinho';
 
 export default function AddEditScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [loading, setLoading] = useState(false);
+  const { quadrinho, loading: loadingQuadrinho } = useQuadrinho(id);
+  const [saving, setSaving] = useState(false);
   const [titulo, setTitulo] = useState('');
   const [autor, setAutor] = useState('');
   const [editora, setEditora] = useState('');
@@ -23,76 +26,52 @@ export default function AddEditScreen() {
   const [descricao, setDescricao] = useState('');
 
   useEffect(() => {
-    if (id) {
-      loadQuadrinho(parseInt(id));
+    if (quadrinho) {
+      setTitulo(quadrinho.titulo);
+      setAutor(quadrinho.autor);
+      setEditora(quadrinho.editora);
+      setAnoPublicacao(quadrinho.anoPublicacao.toString());
+      setDescricao(quadrinho.descricao || '');
     }
-  }, [id]);
-
-  const loadQuadrinho = async (quadrinhoId: number) => {
-    try {
-      setLoading(true);
-      const quad = await quadrinhoService.getQuadrinhoById(quadrinhoId);
-      if (quad) {
-        setTitulo(quad.titulo);
-        setAutor(quad.autor);
-        setEditora(quad.editora);
-        setAnoPublicacao(quad.anoPublicacao.toString());
-        setDescricao(quad.descricao || '');
-      }
-    } catch (error) {
-      Alert.alert('Erro', 'Não foi possível carregar o quadrinho');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [quadrinho]);
 
   const handleSave = async () => {
     if (!titulo.trim() || !autor.trim() || !editora.trim() || !anoPublicacao.trim()) {
-      Alert.alert('Erro', 'Preencha todos os campos obrigatórios');
+      showError('Preencha todos os campos obrigatórios');
       return;
     }
 
     const ano = parseInt(anoPublicacao);
     if (isNaN(ano) || ano < 0 || ano > new Date().getFullYear()) {
-      Alert.alert('Erro', 'Ano de publicação inválido');
+      showError('Ano de publicação inválido');
       return;
     }
 
     try {
-      setLoading(true);
+      setSaving(true);
+      const input = { titulo, autor, editora, anoPublicacao: ano, descricao };
+
       if (id) {
-        // Atualizar
-        await quadrinhoService.updateQuadrinho(parseInt(id), {
-          titulo,
-          autor,
-          editora,
-          anoPublicacao: ano,
-          descricao,
-        });
-        Alert.alert('Sucesso', 'Quadrinho atualizado com sucesso');
+        await quadrinhoService.updateQuadrinho(parseInt(id), input);
+        showSuccess('Quadrinho atualizado com sucesso');
       } else {
-        // Criar novo
-        await quadrinhoService.createQuadrinho({
-          titulo,
-          autor,
-          editora,
-          anoPublicacao: ano,
-          descricao,
-        });
-        Alert.alert('Sucesso', 'Quadrinho adicionado com sucesso');
+        await quadrinhoService.createQuadrinho(input);
+        showSuccess('Quadrinho adicionado com sucesso');
       }
       router.push('/');
-    } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar o quadrinho');
+    } catch {
+      showError('Não foi possível salvar o quadrinho');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
+  const busy = loadingQuadrinho || saving;
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{id ? 'Editar Quadrinho' : 'Novo Quadrinho'}</Text>
+    <ScrollView style={sharedStyles.container}>
+      <View style={sharedStyles.header}>
+        <Text style={sharedStyles.headerTitle}>{id ? 'Editar Quadrinho' : 'Novo Quadrinho'}</Text>
       </View>
 
       <View style={styles.form}>
@@ -103,7 +82,7 @@ export default function AddEditScreen() {
             placeholder="Digite o título"
             value={titulo}
             onChangeText={setTitulo}
-            editable={!loading}
+            editable={!busy}
           />
         </View>
 
@@ -114,7 +93,7 @@ export default function AddEditScreen() {
             placeholder="Digite o autor"
             value={autor}
             onChangeText={setAutor}
-            editable={!loading}
+            editable={!busy}
           />
         </View>
 
@@ -125,7 +104,7 @@ export default function AddEditScreen() {
             placeholder="Digite a editora"
             value={editora}
             onChangeText={setEditora}
-            editable={!loading}
+            editable={!busy}
           />
         </View>
 
@@ -137,7 +116,7 @@ export default function AddEditScreen() {
             value={anoPublicacao}
             onChangeText={setAnoPublicacao}
             keyboardType="number-pad"
-            editable={!loading}
+            editable={!busy}
           />
         </View>
 
@@ -150,24 +129,26 @@ export default function AddEditScreen() {
             onChangeText={setDescricao}
             multiline
             numberOfLines={4}
-            editable={!loading}
+            editable={!busy}
           />
         </View>
 
         <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+          style={[sharedStyles.button, styles.primaryButton, busy && styles.buttonDisabled]}
           onPress={handleSave}
-          disabled={loading}
+          disabled={busy}
         >
-          <Text style={styles.buttonText}>{loading ? 'Salvando...' : 'Salvar'}</Text>
+          <Text style={[sharedStyles.buttonText, styles.primaryButtonText]}>
+            {saving ? 'Salvando...' : 'Salvar'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, styles.cancelButton]}
+          style={[sharedStyles.button, sharedStyles.cancelButton, styles.primaryButton]}
           onPress={() => router.back()}
-          disabled={loading}
+          disabled={busy}
         >
-          <Text style={styles.buttonText}>Cancelar</Text>
+          <Text style={[sharedStyles.buttonText, styles.primaryButtonText]}>Cancelar</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -175,20 +156,6 @@ export default function AddEditScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    backgroundColor: '#6200ee',
-    padding: 20,
-    paddingTop: 30,
-  },
-  title: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
   form: {
     padding: 20,
   },
@@ -198,39 +165,30 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: AppColors.textPrimary,
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#fff',
-    borderColor: '#ddd',
+    backgroundColor: AppColors.white,
+    borderColor: AppColors.border,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#333',
+    color: AppColors.textPrimary,
   },
   textArea: {
     textAlignVertical: 'top',
   },
-  button: {
-    backgroundColor: '#6200ee',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
+  primaryButton: {
+    backgroundColor: AppColors.primary,
     marginVertical: 8,
   },
   buttonDisabled: {
     opacity: 0.5,
   },
-  cancelButton: {
-    backgroundColor: '#999',
-  },
-  buttonText: {
-    color: '#fff',
+  primaryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
   },
 });
