@@ -19,9 +19,9 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
       );
     `);
 
-    console.log('Banco de dados inicializado com sucesso');
+    if (__DEV__) console.log('Banco de dados inicializado com sucesso');
   } catch (error) {
-    console.error('Erro ao inicializar o banco de dados:', error);
+    if (__DEV__) console.error('Erro ao inicializar o banco de dados:', error);
     throw error;
   }
 
