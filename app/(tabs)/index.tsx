@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import HomeScreen from '@/screens/HomeScreen';
 import { initializeDatabase } from '@/database/db';
-import { getErrorMessage } from '@/services/error-utils';
+import { getErrorMessage } from '@/utils/alerts';
 
 export default function Home() {
   const [dbReady, setDbReady] = useState(false);
