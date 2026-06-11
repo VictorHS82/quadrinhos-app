@@ -33,7 +33,7 @@ export default function HomeScreen() {
       }
     } catch (error) {
       const message = getErrorMessage(error);
-      console.error('Erro ao carregar quadrinhos:', error);
+      if (__DEV__) console.error('Erro ao carregar quadrinhos:', error);
       Alert.alert('Erro', `Não foi possível carregar os quadrinhos: ${message}`);
     } finally {
       setLoading(false);
@@ -67,7 +67,7 @@ export default function HomeScreen() {
               loadQuadrinhos();
             } catch (error) {
               const message = getErrorMessage(error);
-              console.error('Erro ao deletar quadrinho:', error);
+              if (__DEV__) console.error('Erro ao deletar quadrinho:', error);
               Alert.alert('Erro', `Não foi possível deletar o quadrinho: ${message}`);
             }
           },
@@ -122,6 +122,7 @@ export default function HomeScreen() {
         placeholder="Buscar por título, autor ou editora..."
         value={searchQuery}
         onChangeText={setSearchQuery}
+        maxLength={200}
       />
 
       {loading ? (

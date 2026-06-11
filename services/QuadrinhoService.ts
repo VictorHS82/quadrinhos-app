@@ -10,7 +10,7 @@ class QuadrinhoService {
       this.db = await getDatabase();
     } catch (error) {
       this.db = null;
-      console.error('QuadrinhoService: falha ao inicializar banco de dados:', error);
+      if (__DEV__) console.error('QuadrinhoService: falha ao inicializar banco de dados:', error);
       throw error;
     }
   }
@@ -38,12 +38,12 @@ class QuadrinhoService {
       );
 
       return {
-        id: result.lastInsertRowid as number,
+        id: result.lastInsertRowId as number,
         ...input,
         dataCriacao,
       };
     } catch (error) {
-      console.error('Erro ao criar quadrinho:', error);
+      if (__DEV__) console.error('Erro ao criar quadrinho:', error);
       throw error;
     }
   }
@@ -58,7 +58,7 @@ class QuadrinhoService {
       `);
       return result || [];
     } catch (error) {
-      console.error('Erro ao obter quadrinhos:', error);
+      if (__DEV__) console.error('Erro ao obter quadrinhos:', error);
       throw error;
     }
   }
@@ -74,7 +74,7 @@ class QuadrinhoService {
       );
       return result || null;
     } catch (error) {
-      console.error('Erro ao obter quadrinho:', error);
+      if (__DEV__) console.error('Erro ao obter quadrinho:', error);
       throw error;
     }
   }
@@ -110,7 +110,7 @@ class QuadrinhoService {
 
       return updatedData;
     } catch (error) {
-      console.error('Erro ao atualizar quadrinho:', error);
+      if (__DEV__) console.error('Erro ao atualizar quadrinho:', error);
       throw error;
     }
   }
@@ -126,7 +126,7 @@ class QuadrinhoService {
       );
       return result.changes > 0;
     } catch (error) {
-      console.error('Erro ao deletar quadrinho:', error);
+      if (__DEV__) console.error('Erro ao deletar quadrinho:', error);
       throw error;
     }
   }
@@ -144,7 +144,7 @@ class QuadrinhoService {
       );
       return result || [];
     } catch (error) {
-      console.error('Erro ao buscar quadrinhos:', error);
+      if (__DEV__) console.error('Erro ao buscar quadrinhos:', error);
       throw error;
     }
   }

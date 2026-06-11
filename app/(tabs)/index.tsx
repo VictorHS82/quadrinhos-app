@@ -15,7 +15,7 @@ export default function Home() {
       setDbReady(true);
     } catch (error) {
       const message = getErrorMessage(error);
-      console.error('Erro ao inicializar banco de dados:', error);
+      if (__DEV__) console.error('Erro ao inicializar banco de dados:', error);
       setDbError(message);
       Alert.alert(
         'Erro de Inicialização',

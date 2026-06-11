@@ -20,7 +20,13 @@ export default function DetailScreen() {
 
   useEffect(() => {
     if (id) {
-      loadQuadrinho(parseInt(id));
+      const parsedId = parseInt(id, 10);
+      if (!isNaN(parsedId) && parsedId > 0) {
+        loadQuadrinho(parsedId);
+      } else {
+        Alert.alert('Erro', 'ID do quadrinho inválido');
+        router.back();
+      }
     }
   }, [id]);
 
@@ -35,7 +41,7 @@ export default function DetailScreen() {
       }
     } catch (error) {
       const message = getErrorMessage(error);
-      console.error('Erro ao carregar quadrinho:', error);
+      if (__DEV__) console.error('Erro ao carregar quadrinho:', error);
       Alert.alert('Erro', `Não foi possível carregar o quadrinho: ${message}`);
       router.back();
     } finally {
@@ -60,7 +66,7 @@ export default function DetailScreen() {
               router.push('/');
             } catch (error) {
               const message = getErrorMessage(error);
-              console.error('Erro ao deletar quadrinho:', error);
+              if (__DEV__) console.error('Erro ao deletar quadrinho:', error);
               Alert.alert('Erro', `Não foi possível deletar o quadrinho: ${message}`);
             }
           },
