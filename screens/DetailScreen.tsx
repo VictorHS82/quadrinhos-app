@@ -27,8 +27,8 @@ export default function DetailScreen() {
         await quadrinhoService.deleteQuadrinho(quadrinho.id);
         showSuccess('Quadrinho deletado com sucesso');
         router.push('/');
-      } catch {
-        showError('Não foi possível deletar o quadrinho');
+      } catch (error) {
+        showError('Não foi possível deletar o quadrinho', error);
       }
     });
   };

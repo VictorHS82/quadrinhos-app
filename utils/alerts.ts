@@ -1,7 +1,23 @@
 import { Alert } from 'react-native';
 
-export function showError(message: string): void {
-  Alert.alert('Erro', message);
+/**
+ * Extracts a human-readable message from an unknown error value.
+ */
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  return 'Erro desconhecido';
+}
+
+export function showError(message: string, error?: unknown): void {
+  const detail = error != null ? getErrorMessage(error) : null;
+  const fullMessage = detail ? `${message}: ${detail}` : message;
+  if (__DEV__ && error != null) console.error(message, error);
+  Alert.alert('Erro', fullMessage);
 }
 
 export function showSuccess(message: string): void {

@@ -29,5 +29,12 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
 }
 
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
-  return await SQLite.openDatabaseAsync(DATABASE_NAME);
+  try {
+    return await SQLite.openDatabaseAsync(DATABASE_NAME);
+  } catch (error) {
+    if (__DEV__) console.error('Erro ao abrir conexão com o banco de dados:', error);
+    throw new Error(
+      `Falha ao abrir o banco de dados "${DATABASE_NAME}": ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
 }

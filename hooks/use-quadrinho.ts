@@ -31,9 +31,9 @@ export function useQuadrinho(id: string | undefined): UseQuadrinhoResult {
         if (!cancelled) {
           setQuadrinho(result);
         }
-      } catch {
+      } catch (error) {
         if (!cancelled) {
-          showError('Não foi possível carregar o quadrinho');
+          showError('Não foi possível carregar o quadrinho', error);
         }
       } finally {
         if (!cancelled) {

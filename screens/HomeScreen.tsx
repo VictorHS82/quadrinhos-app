@@ -34,8 +34,7 @@ export default function HomeScreen() {
         setQuadrinhos(data);
       }
     } catch (error) {
-      if (__DEV__) console.error('Erro ao carregar quadrinhos:', error);
-      showError('Não foi possível carregar os quadrinhos');
+      showError('Não foi possível carregar os quadrinhos', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -59,8 +58,8 @@ export default function HomeScreen() {
         await quadrinhoService.deleteQuadrinho(id);
         showSuccess('Quadrinho deletado com sucesso');
         loadQuadrinhos();
-      } catch {
-        showError('Não foi possível deletar o quadrinho');
+      } catch (error) {
+        showError('Não foi possível deletar o quadrinho', error);
       }
     });
   };

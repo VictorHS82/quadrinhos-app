@@ -75,8 +75,8 @@ export default function AddEditScreen() {
         showSuccess('Quadrinho adicionado com sucesso');
       }
       router.push('/');
-    } catch {
-      showError('Não foi possível salvar o quadrinho');
+    } catch (error) {
+      showError('Não foi possível salvar o quadrinho', error);
     } finally {
       setSaving(false);
     }
