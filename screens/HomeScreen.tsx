@@ -34,7 +34,7 @@ export default function HomeScreen() {
         setQuadrinhos(data);
       }
     } catch (error) {
-      console.error('Erro ao carregar quadrinhos:', error);
+      if (__DEV__) console.error('Erro ao carregar quadrinhos:', error);
       showError('Não foi possível carregar os quadrinhos');
     } finally {
       setLoading(false);
@@ -110,6 +110,7 @@ export default function HomeScreen() {
         placeholder="Buscar por título, autor ou editora..."
         value={searchQuery}
         onChangeText={setSearchQuery}
+        maxLength={200}
       />
 
       {loading ? (

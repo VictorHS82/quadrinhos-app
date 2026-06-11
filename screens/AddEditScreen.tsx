@@ -36,12 +36,17 @@ export default function AddEditScreen() {
   }, [quadrinho]);
 
   const handleSave = async () => {
-    if (!titulo.trim() || !autor.trim() || !editora.trim() || !anoPublicacao.trim()) {
+    const trimmedTitulo = titulo.trim();
+    const trimmedAutor = autor.trim();
+    const trimmedEditora = editora.trim();
+    const trimmedDescricao = descricao.trim();
+
+    if (!trimmedTitulo || !trimmedAutor || !trimmedEditora || !anoPublicacao.trim()) {
       showError('Preencha todos os campos obrigatórios');
       return;
     }
 
-    const ano = parseInt(anoPublicacao);
+    const ano = parseInt(anoPublicacao, 10);
     if (isNaN(ano) || ano < 0 || ano > new Date().getFullYear()) {
       showError('Ano de publicação inválido');
       return;
@@ -49,10 +54,21 @@ export default function AddEditScreen() {
 
     try {
       setSaving(true);
-      const input = { titulo, autor, editora, anoPublicacao: ano, descricao };
+      const input = {
+        titulo: trimmedTitulo,
+        autor: trimmedAutor,
+        editora: trimmedEditora,
+        anoPublicacao: ano,
+        descricao: trimmedDescricao,
+      };
 
       if (id) {
-        await quadrinhoService.updateQuadrinho(parseInt(id), input);
+        const parsedId = parseInt(id, 10);
+        if (isNaN(parsedId) || parsedId <= 0) {
+          showError('ID do quadrinho inválido');
+          return;
+        }
+        await quadrinhoService.updateQuadrinho(parsedId, input);
         showSuccess('Quadrinho atualizado com sucesso');
       } else {
         await quadrinhoService.createQuadrinho(input);
@@ -83,6 +99,7 @@ export default function AddEditScreen() {
             value={titulo}
             onChangeText={setTitulo}
             editable={!busy}
+            maxLength={200}
           />
         </View>
 
@@ -94,6 +111,7 @@ export default function AddEditScreen() {
             value={autor}
             onChangeText={setAutor}
             editable={!busy}
+            maxLength={150}
           />
         </View>
 
@@ -105,6 +123,7 @@ export default function AddEditScreen() {
             value={editora}
             onChangeText={setEditora}
             editable={!busy}
+            maxLength={150}
           />
         </View>
 
@@ -117,6 +136,7 @@ export default function AddEditScreen() {
             onChangeText={setAnoPublicacao}
             keyboardType="number-pad"
             editable={!busy}
+            maxLength={4}
           />
         </View>
 
@@ -130,6 +150,7 @@ export default function AddEditScreen() {
             multiline
             numberOfLines={4}
             editable={!busy}
+            maxLength={1000}
           />
         </View>
 

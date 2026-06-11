@@ -15,12 +15,19 @@ export function useQuadrinho(id: string | undefined): UseQuadrinhoResult {
   useEffect(() => {
     if (!id) return;
 
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId) || parsedId <= 0) {
+      showError('ID do quadrinho inválido');
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     async function load() {
       try {
         setLoading(true);
-        const result = await quadrinhoService.getQuadrinhoById(parseInt(id!));
+        const result = await quadrinhoService.getQuadrinhoById(parsedId);
         if (!cancelled) {
           setQuadrinho(result);
         }
