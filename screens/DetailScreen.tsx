@@ -1,74 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Quadrinho } from '../types/Quadrinho';
 import { quadrinhoService } from '../services/QuadrinhoService';
+import { AppColors } from '../constants/colors';
+import { sharedStyles } from '../styles/shared';
+import { confirmDelete, showError, showSuccess } from '../utils/alerts';
+import { useQuadrinho } from '../hooks/use-quadrinho';
+import { StatusView } from '../components/loading-view';
 
 export default function DetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [quadrinho, setQuadrinho] = useState<Quadrinho | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (id) {
-      const parsedId = parseInt(id, 10);
-      if (!isNaN(parsedId) && parsedId > 0) {
-        loadQuadrinho(parsedId);
-      } else {
-        Alert.alert('Erro', 'ID do quadrinho inválido');
-        router.back();
-      }
-    }
-  }, [id]);
-
-  const loadQuadrinho = async (quadrinhoId: number) => {
-    try {
-      setLoading(true);
-      const quad = await quadrinhoService.getQuadrinhoById(quadrinhoId);
-      setQuadrinho(quad);
-      if (!quad) {
-        Alert.alert('Erro', 'Quadrinho não encontrado');
-        router.back();
-      }
-    } catch (error) {
-      Alert.alert('Erro', 'Não foi possível carregar o quadrinho');
-      router.back();
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { quadrinho, loading } = useQuadrinho(id);
 
   const handleDelete = () => {
     if (!quadrinho) return;
 
-    Alert.alert(
-      'Confirmar exclusão',
-      `Tem certeza que deseja deletar "${quadrinho.titulo}"?`,
-      [
-        { text: 'Cancelar', onPress: () => {}, style: 'cancel' },
-        {
-          text: 'Deletar',
-          onPress: async () => {
-            try {
-              await quadrinhoService.deleteQuadrinho(quadrinho.id);
-              Alert.alert('Sucesso', 'Quadrinho deletado com sucesso');
-              router.push('/');
-            } catch (error) {
-              Alert.alert('Erro', 'Não foi possível deletar o quadrinho');
-            }
-          },
-          style: 'destructive',
-        },
-      ]
-    );
+    confirmDelete(quadrinho.titulo, async () => {
+      try {
+        await quadrinhoService.deleteQuadrinho(quadrinho.id);
+        showSuccess('Quadrinho deletado com sucesso');
+        router.push('/');
+      } catch {
+        showError('Não foi possível deletar o quadrinho');
+      }
+    });
   };
 
   const handleEdit = () => {
@@ -79,20 +41,16 @@ export default function DetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.centerContent}>
-          <Text style={styles.loadingText}>Carregando...</Text>
-        </View>
+      <View style={sharedStyles.container}>
+        <StatusView message="Carregando..." />
       </View>
     );
   }
 
   if (!quadrinho) {
     return (
-      <View style={styles.container}>
-        <View style={styles.centerContent}>
-          <Text style={styles.errorText}>Quadrinho não encontrado</Text>
-        </View>
+      <View style={sharedStyles.container}>
+        <StatusView message="Quadrinho não encontrado" type="error" />
       </View>
     );
   }
@@ -106,9 +64,9 @@ export default function DetailScreen() {
   });
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Detalhes do Quadrinho</Text>
+    <ScrollView style={sharedStyles.container}>
+      <View style={sharedStyles.header}>
+        <Text style={sharedStyles.headerTitle}>Detalhes do Quadrinho</Text>
       </View>
 
       <View style={styles.content}>
@@ -150,24 +108,24 @@ export default function DetailScreen() {
 
         <View style={styles.actions}>
           <TouchableOpacity
-            style={[styles.button, styles.editButton]}
+            style={[sharedStyles.button, sharedStyles.editButton, styles.actionButton]}
             onPress={handleEdit}
           >
-            <Text style={styles.buttonText}>Editar</Text>
+            <Text style={[sharedStyles.buttonText, styles.actionButtonText]}>Editar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.deleteButton]}
+            style={[sharedStyles.button, sharedStyles.deleteButton, styles.actionButton]}
             onPress={handleDelete}
           >
-            <Text style={styles.buttonText}>Deletar</Text>
+            <Text style={[sharedStyles.buttonText, styles.actionButtonText]}>Deletar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.backButton]}
+            style={[sharedStyles.button, sharedStyles.cancelButton, styles.actionButton]}
             onPress={() => router.back()}
           >
-            <Text style={styles.buttonText}>Voltar</Text>
+            <Text style={[sharedStyles.buttonText, styles.actionButtonText]}>Voltar</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -176,29 +134,15 @@ export default function DetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    backgroundColor: '#6200ee',
-    padding: 20,
-    paddingTop: 30,
-  },
-  title: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
   content: {
     padding: 16,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: AppColors.white,
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: AppColors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -207,7 +151,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#6200ee',
+    color: AppColors.primary,
     marginBottom: 12,
   },
   infoRow: {
@@ -218,18 +162,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: AppColors.textPrimary,
     width: '40%',
   },
   value: {
     fontSize: 14,
-    color: '#666',
+    color: AppColors.textSecondary,
     width: '60%',
     flexWrap: 'wrap',
   },
   description: {
     fontSize: 14,
-    color: '#666',
+    color: AppColors.textSecondary,
     lineHeight: 20,
   },
   actions: {
@@ -237,38 +181,11 @@ const styles = StyleSheet.create({
     gap: 8,
     marginVertical: 16,
   },
-  button: {
+  actionButton: {
     flex: 1,
-    paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 8,
-    alignItems: 'center',
   },
-  editButton: {
-    backgroundColor: '#4CAF50',
-  },
-  deleteButton: {
-    backgroundColor: '#ff6b6b',
-  },
-  backButton: {
-    backgroundColor: '#999',
-  },
-  buttonText: {
-    color: '#fff',
+  actionButtonText: {
     fontSize: 14,
-    fontWeight: '600',
-  },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#f00',
   },
 });
